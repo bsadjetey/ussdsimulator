@@ -15,8 +15,8 @@
             $('#start-ussd').on('click',function(){
                 runUSSD("",phone_number);
             });
-            $('#btn-send').on('click',function(){
-                runUSSD($('#ussd_text').val(),phone_number);
+            $('#btn-send').on('click',function(){		
+                runUSSD($('#txt-input').val(),phone_number);
             });
             $('.clear-ussd-session').on('click',function(){
                 clearSession();
@@ -39,7 +39,7 @@
 				will have to be returned as 
 				end Thank you for using our service.
 			*/
-            function runUSSD(text,phone_number){
+            function runUSSD(text,phone_number){				
 				/******************************/
 				var app_url = localStorage.getItem("app_url");
                 $('#loader-4').show();
