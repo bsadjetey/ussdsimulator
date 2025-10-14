@@ -1,0 +1,29 @@
+<div class="d-flex flex-column vh-100">
+  <div class="bg-primary text-white p-3 text-center">
+    <h5>USSD Simulator</h5>
+  </div>
+
+  <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center px-3">
+    <div *ngIf="!showInput && !showEnd" class="mb-3">
+      <button class="btn btn-primary btn-lg" (click)="startSession()">Start USSD</button>
+    </div>
+
+    <div *ngIf="loading" class="mb-3">
+      <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+    </div>
+
+    <div *ngIf="ussdContent" class="mb-3 text-center">
+      <pre>{{ ussdContent }}</pre>
+    </div>
+
+    <form *ngIf="showInput" [formGroup]="ussdForm" class="d-flex gap-2">
+      <input type="text" formControlName="inputText" class="form-control" placeholder="Enter option">
+      <button type="button" class="btn btn-primary" (click)="submitInput()">Send</button>
+      <button type="button" class="btn btn-secondary" (click)="cancelSession()">Cancel</button>
+    </form>
+
+    <div *ngIf="showEnd" class="mt-3">
+      <button class="btn btn-secondary" (click)="cancelSession()">Dismiss</button>
+    </div>
+  </div>
+</div>
