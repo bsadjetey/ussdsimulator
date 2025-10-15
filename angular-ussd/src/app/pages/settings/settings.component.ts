@@ -20,7 +20,7 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit() {
     this.apps = this.ussd.getApps();
-    const selectedApp = localStorage.getItem('selected_app') || '';
+    const selectedApp = this.ussd.getSelectedApp();
 
     this.settingsForm = this.fb.group({
       appUrl: [localStorage.getItem('app_url') || '', Validators.required],
@@ -36,9 +36,11 @@ export class SettingsComponent implements OnInit {
     }
 
     const { appUrl, phoneNumber, selectedApp } = this.settingsForm.value;
-    localStorage.setItem('app_url', appUrl);
-    localStorage.setItem('phone_number', phoneNumber);
-    localStorage.setItem('selected_app', selectedApp);
+    this.ussd.setAppUrl(appUrl);
+    this.ussd.setPhoneNumber(phoneNumber);
+    this.ussd.setSelectedApp(selectedApp);
+    // localStorage.setItem('phone_number', phoneNumber);
+    // localStorage.setItem('selected_app', selectedApp);
 
     this.toast.show('Settings saved successfully!', 'success');
   }

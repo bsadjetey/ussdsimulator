@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { UssdService } from 'src/app/services/ussd-service';
 
 @Component({
   selector: 'app-navbar',
@@ -6,9 +8,18 @@ import { Component } from '@angular/core';
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent {
-selectedAppName = localStorage.getItem('selected_app_name') || '';
+selectedAppName = '';
+  private sub!: Subscription;
 
-  ngDoCheck() {
-    this.selectedAppName = localStorage.getItem('selected_app_name') || '';
+  constructor(private ussd: UssdService) {}
+
+  ngOnInit() {
+    this.sub = this.ussd.selectedAppName$.subscribe(
+      name => this.selectedAppName = name
+    );
+  }
+
+  ngOnDestroy() {
+    if (this.sub) this.sub.unsubscribe();
   }
 }

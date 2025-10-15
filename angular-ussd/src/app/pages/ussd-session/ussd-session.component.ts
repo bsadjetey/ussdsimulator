@@ -32,7 +32,7 @@ export class UssdSessionComponent implements OnInit, AfterViewInit {
     });
 
     // ✅ Load selected app name (for display)
-    this.selectedAppName = localStorage.getItem('selected_app_name') || '';
+    this.selectedAppName = this.ussd.getSelectedApp();
   }
 
   ngAfterViewInit() {

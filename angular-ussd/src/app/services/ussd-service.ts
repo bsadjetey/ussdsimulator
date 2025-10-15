@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 
 export interface USSDRequest {
   text: string;
@@ -20,6 +20,10 @@ export interface USSDApp {
 export class UssdService {
   private localStorageKey = 'ussd_apps';
 
+  private selectedAppNameSubject = new BehaviorSubject<string>(
+    localStorage.getItem('selected_app') || ''
+  );
+  selectedAppName$ = this.selectedAppNameSubject.asObservable();
   constructor(private http: HttpClient) {}
 
   /**
@@ -33,7 +37,7 @@ export class UssdService {
    * Send USSD request to the configured endpoint
    */
   sendUSSD(data: USSDRequest): Observable<string> {
-    const appUrl = localStorage.getItem('app_url');
+    const appUrl = this.getAppUrl();
     if (!appUrl) {
       return of('end Error: App URL not configured');
     }
@@ -64,4 +68,30 @@ export class UssdService {
   getApps(): USSDApp[] {
     return JSON.parse(localStorage.getItem(this.localStorageKey) || '[]');
   }
+
+  setAppUrl(appUrl:string){
+    localStorage.setItem('app_url', appUrl);
+  }
+
+  getAppUrl(){
+    return localStorage.getItem("app_url");
+  }
+
+  setPhoneNumber(phoneNumber:string){
+    localStorage.setItem('phone_number', phoneNumber);
+  }
+
+  getPhoneNumber(){
+    return localStorage.getItem("phone_number");
+  }
+
+  setSelectedApp(name: string) {
+    localStorage.setItem('selected_app', name);
+    this.selectedAppNameSubject.next(name);
+  }
+
+  getSelectedApp(): string {
+    return this.selectedAppNameSubject.value;
+  }
+
 }
