@@ -1,29 +1,39 @@
-<div class="d-flex flex-column vh-100">
-  <div class="bg-primary text-white p-3 text-center">
-    <h5>USSD Simulator</h5>
+<div class="container-fullscreen bg-white border rounded shadow-sm ussd-container">
+  <!-- Header -->
+  <div class="bg-primary text-white text-center py-2 rounded-top w-100">
+    <h5 class="mb-0">USSD Session</h5>
+    <small *ngIf="selectedAppName">App: {{ selectedAppName }}</small>
+    <small *ngIf="!selectedAppName">No app selected</small>
   </div>
 
-  <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center px-3">
-    <div *ngIf="!showInput && !showEnd" class="mb-3">
-      <button class="btn btn-primary btn-lg" (click)="startSession()">Start USSD</button>
+  <!-- Body -->
+  <div class="ussd-body flex-grow-1 d-flex justify-content-center align-items-center text-center w-100 px-3">
+    <div *ngIf="loading" class="loader">
+      <div class="spinner-border text-primary" role="status"></div>
     </div>
 
-    <div *ngIf="loading" class="mb-3">
-      <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-    </div>
-
-    <div *ngIf="ussdContent" class="mb-3 text-center">
+    <div *ngIf="ussdContent && !loading" class="ussd-content w-100">
       <pre>{{ ussdContent }}</pre>
     </div>
 
-    <form *ngIf="showInput" [formGroup]="ussdForm" class="d-flex gap-2">
-      <input type="text" formControlName="inputText" class="form-control" placeholder="Enter option">
-      <button type="button" class="btn btn-primary" (click)="submitInput()">Send</button>
-      <button type="button" class="btn btn-secondary" (click)="cancelSession()">Cancel</button>
-    </form>
-
-    <div *ngIf="showEnd" class="mt-3">
-      <button class="btn btn-secondary" (click)="cancelSession()">Dismiss</button>
+    <div *ngIf="!showInput && !ussdContent && !loading" id="start-section">
+      <button class="btn btn-primary btn-lg" (click)="startSession()">Start USSD</button>
     </div>
+  </div>
+
+  <!-- Footer input controls -->
+  <div class="ussd-footer bg-white border-top p-2 w-100" *ngIf="showInput">
+    <form [formGroup]="ussdForm" class="d-flex w-100 gap-2 mb-0">
+      <input #inputField type="text" formControlName="inputText" class="form-control" placeholder="Enter option..." autocomplete="off">
+      <button type="button" class="btn btn-primary" (click)="submitInput()">
+        <i class="bi bi-send"></i>
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="cancelSession()">Cancel</button>
+    </form>
+  </div>
+
+  <!-- Footer for END message -->
+  <div class="ussd-footer bg-white border-top p-3 text-center w-100" *ngIf="showEnd">
+    <button class="btn btn-secondary w-50" (click)="cancelSession()">Dismiss</button>
   </div>
 </div>

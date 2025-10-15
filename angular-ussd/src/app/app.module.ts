@@ -9,13 +9,15 @@ import { AddAppComponent } from './pages/add-app/add-app.component';
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+import { NavbarComponent } from './shared/navbar/navbar/navbar.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     UssdSessionComponent,
     SettingsComponent,
-    AddAppComponent
+    AddAppComponent,
+    NavbarComponent
   ],
   imports: [
     BrowserModule,
