@@ -1,18 +1,22 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary py-2 px-3 shadow-sm">
-  <div class="container-fluid justify-content-around">
-    <a routerLink="/session" class="btn btn-outline-light btn-sm btn-navbar">
-      <i class="bi bi-telephone"></i> Session
-    </a>
-    <a routerLink="/add-app" class="btn btn-outline-light btn-sm btn-navbar">
-      <i class="bi bi-plus-circle"></i> Add App
-    </a>
-    <a routerLink="/settings" class="btn btn-outline-light btn-sm btn-navbar">
-      <i class="bi bi-gear"></i> Settings
-    </a>
-  </div>
+<nav class="navbar navbar-expand-lg navbar-dark py-2 px-3 shadow-sm">
+  <div class="container-fluid flex-column align-items-center">
+    <!-- Top row: navigation buttons -->
+    <div class="d-flex justify-content-around w-100 mb-2">
+      <a routerLink="/session" class="btn btn-outline-light btn-sm btn-navbar">
+        <i class="bi bi-telephone"></i> Session
+      </a>
+      <a routerLink="/add-app" class="btn btn-outline-light btn-sm btn-navbar">
+        <i class="bi bi-plus-circle"></i> Add App
+      </a>
+      <a routerLink="/settings" class="btn btn-outline-light btn-sm btn-navbar">
+        <i class="bi bi-gear"></i> Settings
+      </a>
+    </div>
 
-  <div class="navbar-center text-light text-center flex-grow-1">
-    <span class="fw-semibold">Active App:</span>
-    <span class="text-warning ms-1">{{ selectedAppName || 'None' }}</span>
+    <!-- Bottom row: active app name -->
+    <div class="navbar-center text-light text-center">
+      <span class="fw-semibold">Active App:</span>
+      <span class="text-warning ms-1">{{ selectedAppName || 'None' }}</span>
+    </div>
   </div>
 </nav>

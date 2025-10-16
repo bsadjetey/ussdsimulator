@@ -1,10 +1,17 @@
 .navbar {
   background-color: var(--primary) !important;
+  border-radius: 0 0 30px 30px;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
-  button, a {
+  button,
+  a {
     border-radius: 30px;
     transition: all 0.3s ease;
     color: white;
+    margin-top:10px;
   }
 
   .btn-navbar:hover {
