@@ -1,5 +1,21 @@
 .navbar {
+  background-color: var(--primary) !important;
+
   button, a {
-    border-radius: 20px;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+    color: white;
+  }
+
+  .btn-navbar:hover {
+    background-color: var(--secondary);
+    border-color: var(--secondary);
+    color: white;
+    transform: translateY(-2px);
+  }
+
+  .navbar-center {
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
   }
 }

@@ -1,23 +1,88 @@
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: #f8f9fa;
-  overflow: hidden; /* Prevent unnecessary scrollbars */
+/* =========================================================
+   GLOBAL THEME — USSD Simulator (matches one-page theme)
+   ========================================================= */
+:root {
+  --primary: #1a3765;
+  --secondary: #f26824;
 }
 
+/* GLOBAL RESET */
+body {
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+/* =========================================================
+   REUSABLE COMPONENTS
+   ========================================================= */
+
+/* Cards */
+.card {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 1rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  padding: 2rem;
+  background: white;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--primary) !important;
+  border: none;
+  border-radius: 30px;
+  color: white !important;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary) !important;
+  transform: translateY(-2px);
+}
+
+/* Outline Buttons */
+.btn-outline-light {
+  border-radius: 20px;
+  border: 2px solid white;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+  background-color: white;
+  color: var(--primary);
+}
+
+/* Form Inputs */
+.form-control,
+.form-select {
+  border-radius: 30px;
+  padding: 0.6rem 1rem;
+  border: 1px solid #ddd;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 0.2rem rgba(242, 104, 36, 0.25);
+  outline: none;
+}
+
+/* Form Labels */
+label.form-label {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Section containers */
 .container-fullscreen {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: calc(100vh - 56px); /* Adjust for navbar height */
+  height: calc(100vh - 56px); /* Adjust for navbar */
   padding: 1rem;
-}
-
-.card {
-  width: 100%;
-  max-width: 480px;
-  border-radius: 1rem;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }

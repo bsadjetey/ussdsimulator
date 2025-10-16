@@ -7,12 +7,12 @@
     <form [formGroup]="addAppForm" (ngSubmit)="addApp()">
       <div class="mb-3">
         <label for="app_name" class="form-label">App Name</label>
-        <input id="app_name" formControlName="appName" type="text" class="form-control">
+        <input id="app_name" formControlName="appName" type="text" class="form-control" required>
       </div>
 
       <div class="mb-3">
         <label for="app_code" class="form-label">App Code</label>
-        <input id="app_code" formControlName="appCode" type="text" class="form-control">
+        <input id="app_code" formControlName="appCode" type="text" class="form-control" required>
       </div>
 
       <button type="submit" class="btn btn-primary w-100">
