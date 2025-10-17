@@ -1,7 +1,7 @@
 {
   "name": "USSD Simulator",
   "short_name": "USSD",
-  "theme_color": "#1976d2",
+  "theme_color": "#1a3765",
   "background_color": "#fafafa",
   "display": "standalone",
   "scope": "./",

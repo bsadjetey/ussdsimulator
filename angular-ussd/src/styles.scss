@@ -4,6 +4,10 @@
 :root {
   --primary: #1a3765;
   --secondary: #f26824;
+
+  /* Override Bootstrap’s color vars */
+  --bs-primary: var(--primary);
+  --bs-secondary: var(--secondary);
 }
 
 /* GLOBAL RESET */
@@ -72,6 +76,10 @@ body {
   outline: none;
 }
 
+.text-primary,
+h5.text-primary {
+  color: var(--primary) !important;
+}
 /* Form Labels */
 label.form-label {
   font-weight: 600;
