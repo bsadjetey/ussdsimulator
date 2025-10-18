@@ -5,11 +5,7 @@
     </h5>
 
     <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
-      <div class="mb-3">
-        <label for="app_url" class="form-label">App URL</label>
-        <input id="app_url" formControlName="appUrl" type="url" class="form-control">
-      </div>
-
+     
       <div class="mb-3">
         <label for="phone_number" class="form-label">Phone Number</label>
         <input id="phone_number" formControlName="phoneNumber" type="tel" class="form-control">
@@ -22,8 +18,14 @@
         </select>
       </div>
 
-      <button type="submit" class="btn btn-primary w-100">
-        <i class="bi bi-save"></i> Save Settings
+      <div class="mb-3">
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="bi bi-save"></i> Save Settings
+        </button>
+      </div>
+
+      <button type="button" class="btn btn-danger w-100" (click)="deleteApps()">
+        <i class="bi bi-recycle"></i> Reset
       </button>
     </form>
   </div>

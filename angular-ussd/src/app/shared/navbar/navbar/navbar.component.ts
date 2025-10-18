@@ -14,8 +14,10 @@ selectedAppName = '';
   constructor(private ussd: UssdService) {}
 
   ngOnInit() {
-    this.sub = this.ussd.selectedAppName$.subscribe(
-      name => this.selectedAppName = name
+    this.sub = this.ussd.selectedApp$.subscribe(
+      app => {
+        this.selectedAppName = app.name;
+      }
     );
   }
 

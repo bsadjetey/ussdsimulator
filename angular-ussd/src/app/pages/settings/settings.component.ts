@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastService } from 'src/app/services/toast-service';
-import { USSDApp, UssdService } from 'src/app/services/ussd-service';
+import { UssdService } from 'src/app/services/ussd-service';
 
 @Component({
   selector: 'app-settings',
@@ -12,20 +12,16 @@ export class SettingsComponent implements OnInit {
   settingsForm!: FormGroup;
   apps: any[] = [];
 
-  constructor(
-    private fb: FormBuilder,
-    private ussd: UssdService,
-    private toast: ToastService
-  ) {}
+  constructor(private fb: FormBuilder, private ussd: UssdService, private toast: ToastService) {}
 
   ngOnInit() {
     this.apps = this.ussd.getApps();
+
     const selectedApp = this.ussd.getSelectedApp();
 
     this.settingsForm = this.fb.group({
-      appUrl: [localStorage.getItem('app_url') || '', Validators.required],
-      phoneNumber: [localStorage.getItem('phone_number') || '', Validators.required],
-      selectedApp: [selectedApp, Validators.required]
+      phoneNumber: [this.ussd.getPhoneNumber() || '', Validators.required],
+      selectedApp: [selectedApp.code, Validators.required]
     });
   }
 
@@ -36,12 +32,24 @@ export class SettingsComponent implements OnInit {
     }
 
     const { appUrl, phoneNumber, selectedApp } = this.settingsForm.value;
+
+    const app = this.apps.find(a => a.code === selectedApp);
+
     this.ussd.setAppUrl(appUrl);
     this.ussd.setPhoneNumber(phoneNumber);
-    this.ussd.setSelectedApp(selectedApp);
-    // localStorage.setItem('phone_number', phoneNumber);
-    // localStorage.setItem('selected_app', selectedApp);
+    this.ussd.setSelectedApp(app);
+    this.ussd.setAppUrl(app.url);
 
     this.toast.show('Settings saved successfully!', 'success');
+  }
+
+  deleteApps() {
+    this.ussd.clearApps();
+    this.ussd.clearSettings();
+    this.toast.show('Apps & settings deleted successfully! Only default apps remain.', 'success');
+
+    this.apps = [];
+    // Reset form
+    this.settingsForm.reset();
   }
 }

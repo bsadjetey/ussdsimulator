@@ -31,7 +31,6 @@ export class UssdSessionComponent implements OnInit, AfterViewInit {
       inputText: ['']
     });
 
-    // ✅ Load selected app name (for display)
     this.selectedAppName = this.ussd.getSelectedApp();
   }
 
@@ -62,8 +61,9 @@ export class UssdSessionComponent implements OnInit, AfterViewInit {
   }
 
   sendUSSD(text: string) {
-    const phoneNumber = localStorage.getItem('phone_number') || '';
-    const appCode = localStorage.getItem('selected_app') || '';
+    const phoneNumber = this.ussd.getPhoneNumber() || '';
+    // console.log(this.ussd.getSelectedApp());
+    const appCode = this.ussd.getSelectedApp().code;
     const sessionId = this.getSessionId();
 
     this.loading = true;
