@@ -79,7 +79,7 @@ export class AddAppComponent implements OnInit {
       return;
     }
 
-    const selectedApp = this.predefinedApps.find(a => a.id === appId);
+    const selectedApp = this.predefinedApps.find(a => a.app_id === appId);
     if (selectedApp) {
       this.selectedAppDescription = selectedApp.description || null;
       this.addAppForm.patchValue({

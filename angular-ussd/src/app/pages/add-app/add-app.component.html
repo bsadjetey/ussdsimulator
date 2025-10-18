@@ -9,7 +9,7 @@
       <label class="form-label">Choose a Demo App (optional)</label>
       <select class="form-select" (change)="onPredefinedSelect($event)">
         <option value="">-- Select a demo app --</option>
-        <option *ngFor="let app of predefinedApps" [value]="app.id">
+        <option *ngFor="let app of predefinedApps" [value]="app.app_id">
           {{ app.name }}
         </option>
       </select>
