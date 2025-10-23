@@ -1,4 +1,3 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastService } from 'src/app/services/toast-service';
@@ -18,8 +17,7 @@ export class AddAppComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private ussd: UssdService,
-    private toast: ToastService,
-    private http: HttpClient
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -44,15 +42,38 @@ export class AddAppComponent implements OnInit {
       }
     }
 
-    // Fetch from backend only if not cached
+    this.fetchAndCacheDemoApps();
+  }
+
+  /** Force reload demo apps from backend without auto-applying */
+  reloadDemoApps() {
+    this.fetchAndCacheDemoApps(true, false);
+  }
+
+  /**
+   * Fetch demo apps from backend and cache them
+   * @param force force fetch from backend
+   * @param autoApply whether to auto-apply settings to the form
+   */
+  private fetchAndCacheDemoApps(force: boolean = false, autoApply: boolean = true) {
+    if (!force && this.predefinedApps.length > 0) return;
+
     this.ussd.getDemoApps().subscribe({
       next: (res) => {
         this.predefinedApps = Array.isArray(res) ? res : [];
-        // Cache the result
         localStorage.setItem(this.predefinedAppsKey, JSON.stringify(this.predefinedApps));
+
+        if (autoApply && this.predefinedApps.length > 0) {
+          // Optionally auto-apply the first demo app on initial load
+          // Uncomment if you want first app auto-selected:
+          // this.onPredefinedSelect({ target: { value: this.predefinedApps[0].app_id } });
+        }
+
+        if (force) this.toast.show('Demo apps reloaded successfully!', 'success');
       },
       error: (error) => {
         console.error('Failed to fetch predefined apps:', error);
+        if (force) this.toast.show('Failed to reload demo apps', 'danger');
       }
     });
   }
@@ -82,12 +103,15 @@ export class AddAppComponent implements OnInit {
     const selectedApp = this.predefinedApps.find(a => a.app_id === appId);
     if (selectedApp) {
       this.selectedAppDescription = selectedApp.description || null;
+
+      // Auto-populate form with selected demo app
       this.addAppForm.patchValue({
         appName: selectedApp.name,
         appCode: selectedApp.app_code,
         appUrl: selectedApp.app_url
       });
 
+      // Auto-apply predefined app settings in the service
       this.ussd.applyPredefinedApp(selectedApp);
     }
   }

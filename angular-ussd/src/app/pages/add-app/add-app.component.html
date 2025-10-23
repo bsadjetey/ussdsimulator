@@ -7,12 +7,18 @@
     <!-- Predefined Apps -->
     <div class="mb-4">
       <label class="form-label">Choose a Demo App (optional)</label>
-      <select class="form-select" (change)="onPredefinedSelect($event)">
-        <option value="">-- Select a demo app --</option>
-        <option *ngFor="let app of predefinedApps" [value]="app.app_id">
-          {{ app.name }}
-        </option>
-      </select>
+      <div class="input-group">
+        <select class="form-select" (change)="onPredefinedSelect($event)">
+          <option value="">-- Select a demo app --</option>
+          <option *ngFor="let app of predefinedApps" [value]="app.app_id">
+            {{ app.name }}
+          </option>
+        </select>
+        <button type="button" class="btn btn-outline-secondary" (click)="reloadDemoApps()"
+          title="Reload demo apps">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+      </div>
       <small class="text-muted" *ngIf="selectedAppDescription">{{ selectedAppDescription }}</small>
     </div>
 
@@ -28,7 +34,7 @@
         <input id="app_code" formControlName="appCode" type="text" class="form-control" required>
       </div>
 
-       <div class="mb-3">
+      <div class="mb-3">
         <label for="app_url" class="form-label">App URL</label>
         <input id="app_url" formControlName="appUrl" type="url" class="form-control">
       </div>
