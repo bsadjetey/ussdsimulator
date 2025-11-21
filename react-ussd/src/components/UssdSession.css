@@ -1,0 +1,25 @@
+.container-fullscreen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.ussd-container {
+  max-width: 400px;
+  margin: auto;
+  border-radius: 12px;
+}
+
+.ussd-body pre {
+  white-space: pre-wrap;
+  font-family: monospace;
+  text-align: left;
+  font-size: 16px;
+}
+
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}

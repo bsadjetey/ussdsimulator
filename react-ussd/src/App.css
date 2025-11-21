@@ -1,0 +1,47 @@
+.ussd-container {
+  max-width: 320px;
+  margin: 60px auto;
+  border: 2px solid #333;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #111;
+  color: #0f0;
+  font-family: monospace;
+  display: flex;
+  flex-direction: column;
+  height: 480px;
+}
+
+.ussd-screen {
+  flex-grow: 1;
+  padding: 16px;
+  overflow-y: auto;
+  white-space: pre-line;
+}
+
+.ussd-input {
+  display: flex;
+  border-top: 1px solid #333;
+}
+
+.ussd-input input {
+  flex-grow: 1;
+  background: #000;
+  color: #0f0;
+  border: none;
+  padding: 10px;
+  outline: none;
+}
+
+.ussd-input button {
+  background: #0f0;
+  color: #000;
+  font-weight: bold;
+  border: none;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.ussd-input button:hover {
+  background: #8f8;
+}
