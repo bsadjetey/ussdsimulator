@@ -1,0 +1,32 @@
+<div class="container-fullscreen">
+  <div class="card p-4">
+    <h5 class="text-center mb-4 text-primary">
+      <i class="bi bi-gear"></i> Settings
+    </h5>
+
+    <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
+     
+      <div class="mb-3">
+        <label for="phone_number" class="form-label">Phone Number</label>
+        <input id="phone_number" formControlName="phoneNumber" type="tel" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label for="selected_app" class="form-label">Select App</label>
+        <select id="selected_app" formControlName="selectedApp" class="form-select">
+          <option *ngFor="let app of apps" [value]="app.code">{{ app.name }}</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="bi bi-save"></i> Save Settings
+        </button>
+      </div>
+
+      <button type="button" class="btn btn-danger w-100" (click)="deleteApps()">
+        <i class="bi bi-recycle"></i> Reset
+      </button>
+    </form>
+  </div>
+</div>
