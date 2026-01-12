@@ -3,8 +3,6 @@ on:
   push:
     branches:
     - main
-    paths:
-    - 'angular-ussd/**'
 jobs:
   build:
     name: Deploy USSD Simulator
@@ -20,7 +18,9 @@ jobs:
     - name: Build the Docker Image
       working-directory: angular-ussd
       id: build-docker-image
-      run: "ls -la  docker build . -f Dockerfile -t makerzgroup/ussdsimulator:latest\n"
+      run: "ls -la\ 
+
+        docker build . -f Dockerfile -t makerzgroup/ussdsimulator:latest\n"
     - name: Push the Docker image
       id: push-docker-image
       run: docker push ${{secrets.DOCKER_HUB_USERNAME}}/ussdsimulator:latest
