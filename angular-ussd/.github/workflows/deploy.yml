@@ -1,0 +1,38 @@
+name: USSD Simulator Deploy
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - 'angular-ussd/**'
+jobs:
+  build:
+    name: Deploy USSD Simulator
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Login to Docker hub
+      id: docker-hub
+      env:
+        username: ${{secrets.DOCKER_HUB_USERNAME}}
+        password: ${{secrets.DOCKER_HUB_PASSWORD}}
+      run: "docker login -u $username -p $password\ \n"
+    - name: Build the Docker Image
+      working-directory: angular-ussd
+      id: build-docker-image
+      run: "ls -la  docker build . -f Dockerfile -t makerzgroup/ussdsimulator:latest\n"
+    - name: Push the Docker image
+      id: push-docker-image
+      run: docker push ${{secrets.DOCKER_HUB_USERNAME}}/ussdsimulator:latest
+    # -------------------------
+    # Deploy to Lightsail
+    # -------------------------
+    - name: Deploy to Lightsail
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.LIGHTSAIL_HOST }}
+        username: ${{ secrets.LIGHTSAIL_USER }}
+        key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+        script: |
+          cd ~/deploy
+          ./deploy-ussdsimulator.sh

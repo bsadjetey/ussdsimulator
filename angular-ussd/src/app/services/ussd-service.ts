@@ -40,7 +40,7 @@ export class UssdService {
 
   getDemoApps(){
     return this.http
-      .get<any[]>(this.demoAppsUrl)
+      .get<any[]>(this.demoAppsUrl+"?user=1?text=&phone_number=0245170772&session_id=sess_mzj4unph67&app_code=WASTEAPP")
       .pipe(catchError(this.handleError));
   }
 
