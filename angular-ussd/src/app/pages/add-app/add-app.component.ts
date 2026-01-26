@@ -74,7 +74,7 @@ export class AddAppComponent implements OnInit {
     const app: USSDApp = {
       name: this.addAppForm.value.appName,
       app_code: this.addAppForm.value.appCode,
-      url: this.addAppForm.value.appUrl,
+      app_url: this.addAppForm.value.appUrl,
     };
 
     this.ussd.addCustomApp(app).subscribe(() => {

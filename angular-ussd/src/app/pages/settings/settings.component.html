@@ -9,16 +9,21 @@
       <!-- Phone -->
       <div class="mb-3">
         <label class="form-label">Phone Number</label>
-        <input formControlName="phoneNumber" class="form-control" />
+        <input formControlName="phoneNumber" class="form-control" [class.is-invalid]="
+            settingsForm.get('phoneNumber')?.touched &&
+            settingsForm.get('phoneNumber')?.invalid
+          " />
+
+        <div class="invalid-feedback">Phone number is required</div>
       </div>
 
       <!-- App source toggle -->
-      <div class="form-check form-switch mb-3">
+      <!-- <div class="form-check form-switch mb-3">
         <input class="form-check-input" type="checkbox" formControlName="useCustomApps" />
         <label class="form-check-label">
           Use Custom Apps
         </label>
-      </div>
+      </div> -->
 
       <!-- App selector -->
       <div class="mb-3">
@@ -27,21 +32,31 @@
         </label>
 
         <div class="input-group">
-          <select class="form-select" formControlName="selectedApp">
+          <select class="form-select" formControlName="selectedApp" [class.is-invalid]="
+              settingsForm.get('selectedApp')?.touched &&
+              settingsForm.get('selectedApp')?.invalid
+            ">
+            <option value="" disabled>Select an app</option>
             <option *ngFor="let app of apps" [value]="app.app_code">
               {{ app.name }}
             </option>
           </select>
 
           <!-- Reload demo apps -->
-          <button *ngIf="!isCustomApps" type="button" class="btn btn-outline-secondary" (click)="reloadDemoApps()"
-            title="Reload demo apps">
+          <button type="button" class="btn btn-outline-secondary" (click)="reloadDemoApps()" title="Reload demo apps">
             <i class="bi bi-arrow-clockwise"></i>
           </button>
         </div>
+
+        <div class="invalid-feedback d-block" *ngIf="
+            settingsForm.get('selectedApp')?.touched &&
+            settingsForm.get('selectedApp')?.invalid
+          ">
+          Please select a demo app
+        </div>
       </div>
 
-      <button class="btn btn-primary w-100 mb-2">
+      <button class="btn btn-primary w-100 mb-2" type="submit" [disabled]="settingsForm.invalid">
         <i class="bi bi-save"></i> Save Settings
       </button>
 

@@ -92,7 +92,7 @@ export class UssdSessionComponent
 
   startSession() {
     if (!this.selectedApp) {
-      this.toast.show('Please select an app first', 'warning');
+      this.toast.show('Please select an app in settings', 'warning');
       return;
     }
 
