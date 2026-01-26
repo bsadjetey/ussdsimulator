@@ -1,24 +1,31 @@
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
-import { FormGroup, FormBuilder } from '@angular/forms';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy} from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { ToastService } from 'src/app/services/toast-service';
-import { UssdService } from 'src/app/services/ussd-service';
+import { USSDApp, UssdService, USSDRequest } from 'src/app/services/ussd-service';
+
 
 @Component({
   selector: 'app-ussd-session',
   templateUrl: './ussd-session.component.html',
   styleUrls: ['./ussd-session.component.scss']
 })
-export class UssdSessionComponent implements OnInit, AfterViewInit {
+export class UssdSessionComponent
+  implements OnInit, AfterViewInit, OnDestroy {
+
   ussdForm!: FormGroup;
+
   ussdContent = '';
   showInput = false;
   showEnd = false;
   loading = false;
 
-  selectedAppName = ''; // ✅ add this line
-  private sessionKey = 'ussd_session_id';
+  selectedApp: USSDApp | null = null;
 
-  @ViewChild('inputField') inputField!: ElementRef;
+  private sessionKey = 'ussd_session_id';
+  private appSub?: Subscription;
+
+  @ViewChild('inputField') inputField!: ElementRef<HTMLInputElement>;
 
   constructor(
     private fb: FormBuilder,
@@ -26,19 +33,33 @@ export class UssdSessionComponent implements OnInit, AfterViewInit {
     private toast: ToastService
   ) {}
 
+  /* ----------------------------------------------------
+   * LIFECYCLE
+   * -------------------------------------------------- */
+
   ngOnInit() {
     this.ussdForm = this.fb.group({
-      inputText: ['']
+      inputText: [''],
     });
 
-    this.selectedAppName = this.ussd.getSelectedApp();
+    // reactively track selected app
+    this.appSub = this.ussd.selectedApp$.subscribe(app => {
+      this.selectedApp = app || null;
+      this.resetSession();
+    });
   }
 
   ngAfterViewInit() {
-    if (this.inputField) {
-      this.inputField.nativeElement.focus();
-    }
+    this.focusInput();
   }
+
+  ngOnDestroy() {
+    this.appSub?.unsubscribe();
+  }
+
+  /* ----------------------------------------------------
+   * SESSION MANAGEMENT
+   * -------------------------------------------------- */
 
   private getSessionId(): string {
     let sessionId = sessionStorage.getItem(this.sessionKey);
@@ -53,31 +74,61 @@ export class UssdSessionComponent implements OnInit, AfterViewInit {
     sessionStorage.removeItem(this.sessionKey);
   }
 
-  startSession() {
+  private resetSession() {
+    this.clearSession();
     this.ussdContent = '';
     this.showInput = false;
     this.showEnd = false;
+    this.ussdForm.reset();
+  }
+
+  private focusInput() {
+    setTimeout(() => this.inputField?.nativeElement.focus(), 100);
+  }
+
+  /* ----------------------------------------------------
+   * USSD FLOW
+   * -------------------------------------------------- */
+
+  startSession() {
+    if (!this.selectedApp) {
+      this.toast.show('Please select an app first', 'warning');
+      return;
+    }
+
+    this.resetSession();
     this.sendUSSD('');
   }
 
   sendUSSD(text: string) {
-    const phoneNumber = this.ussd.getPhoneNumber() || '';
-    // console.log(this.ussd.getSelectedApp());
-    const appCode = this.ussd.getSelectedApp().code;
-    const sessionId = this.getSessionId();
+    if (!this.selectedApp) return;
+
+    const phoneNumber = this.ussd.getPhoneNumber();
+    if (!phoneNumber) {
+      this.toast.show('Phone number not configured', 'danger');
+      return;
+    }
+
+    const payload: USSDRequest = {
+      text,
+      phoneNumber,
+      sessionId: this.getSessionId(),
+      appCode: this.selectedApp.app_code,
+    };
 
     this.loading = true;
 
-    this.ussd.sendUSSD({ text, phoneNumber, sessionId, appCode }).subscribe({
+    this.ussd.sendUSSD(payload).subscribe({
       next: (response: string) => {
         this.loading = false;
+
         const respType = response.slice(0, 3).toLowerCase();
         this.ussdContent = response.slice(3).trim();
 
         if (respType === 'con') {
           this.showInput = true;
           this.showEnd = false;
-          setTimeout(() => this.inputField?.nativeElement.focus(), 100);
+          this.focusInput();
         } else {
           this.showInput = false;
           this.showEnd = true;
@@ -87,22 +138,19 @@ export class UssdSessionComponent implements OnInit, AfterViewInit {
       error: () => {
         this.loading = false;
         this.toast.show('USSD request failed', 'danger');
-      }
+      },
     });
   }
 
   submitInput() {
-    const text = this.ussdForm.get('inputText')?.value?.trim() || '';
+    const text = this.ussdForm.get('inputText')?.value?.trim();
     if (!text) return;
+
     this.sendUSSD(text);
     this.ussdForm.reset();
   }
 
   cancelSession() {
-    this.showInput = false;
-    this.showEnd = false;
-    this.ussdContent = '';
-    this.ussdForm.reset();
-    this.clearSession();
+    this.resetSession();
   }
 }

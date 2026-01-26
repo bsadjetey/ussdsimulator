@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { UssdService } from 'src/app/services/ussd-service';
 
@@ -7,21 +7,25 @@ import { UssdService } from 'src/app/services/ussd-service';
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss']
 })
-export class NavbarComponent {
-selectedAppName = '';
+export class NavbarComponent implements OnInit, OnDestroy {
+
+  selectedAppName = '';
   private sub!: Subscription;
 
   constructor(private ussd: UssdService) {}
 
   ngOnInit() {
-    this.sub = this.ussd.selectedApp$.subscribe(
-      app => {
+    this.sub = this.ussd.selectedApp$.subscribe(app => {
+      // ✅ guard against string / null values
+      if (app && typeof app === 'object' && app.name) {
         this.selectedAppName = app.name;
+      } else {
+        this.selectedAppName = '';
       }
-    );
+    });
   }
 
   ngOnDestroy() {
-    if (this.sub) this.sub.unsubscribe();
+    this.sub?.unsubscribe();
   }
 }

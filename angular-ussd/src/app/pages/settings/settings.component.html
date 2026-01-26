@@ -5,27 +5,48 @@
     </h5>
 
     <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
-     
+
+      <!-- Phone -->
       <div class="mb-3">
-        <label for="phone_number" class="form-label">Phone Number</label>
-        <input id="phone_number" formControlName="phoneNumber" type="tel" class="form-control">
+        <label class="form-label">Phone Number</label>
+        <input formControlName="phoneNumber" class="form-control" />
       </div>
 
-      <div class="mb-3">
-        <label for="selected_app" class="form-label">Select App</label>
-        <select id="selected_app" formControlName="selectedApp" class="form-select">
-          <option *ngFor="let app of apps" [value]="app.code">{{ app.name }}</option>
-        </select>
+      <!-- App source toggle -->
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" formControlName="useCustomApps" />
+        <label class="form-check-label">
+          Use Custom Apps
+        </label>
       </div>
 
+      <!-- App selector -->
       <div class="mb-3">
-        <button type="submit" class="btn btn-primary w-100">
-          <i class="bi bi-save"></i> Save Settings
-        </button>
+        <label class="form-label">
+          Select {{ isCustomApps ? 'Custom' : 'Demo' }} App
+        </label>
+
+        <div class="input-group">
+          <select class="form-select" formControlName="selectedApp">
+            <option *ngFor="let app of apps" [value]="app.app_code">
+              {{ app.name }}
+            </option>
+          </select>
+
+          <!-- Reload demo apps -->
+          <button *ngIf="!isCustomApps" type="button" class="btn btn-outline-secondary" (click)="reloadDemoApps()"
+            title="Reload demo apps">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
       </div>
 
-      <button type="button" class="btn btn-danger w-100" (click)="deleteApps()">
-        <i class="bi bi-recycle"></i> Reset
+      <button class="btn btn-primary w-100 mb-2">
+        <i class="bi bi-save"></i> Save Settings
+      </button>
+
+      <button type="button" class="btn btn-danger w-100" (click)="resetAll()">
+        <i class="bi bi-trash"></i> Reset
       </button>
     </form>
   </div>

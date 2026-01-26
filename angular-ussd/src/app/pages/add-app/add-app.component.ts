@@ -1,18 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastService } from 'src/app/services/toast-service';
-import { UssdService } from 'src/app/services/ussd-service';
+import { UssdService, USSDApp } from 'src/app/services/ussd-service';
+
 
 @Component({
   selector: 'app-add-app',
   templateUrl: './add-app.component.html',
-  styleUrls: ['./add-app.component.scss']
 })
 export class AddAppComponent implements OnInit {
   addAppForm!: FormGroup;
-  predefinedApps: any[] = [];
+
+  demoApps: any[] = [];
   selectedAppDescription: string | null = null;
-  private predefinedAppsKey = 'predefined_ussd_apps';
+
+  loadingDemoApps = false;
 
   constructor(
     private fb: FormBuilder,
@@ -24,95 +26,86 @@ export class AddAppComponent implements OnInit {
     this.addAppForm = this.fb.group({
       appName: ['', Validators.required],
       appCode: ['', Validators.required],
-      appUrl: ['', Validators.required]
+      appUrl: ['', Validators.required],
     });
 
-    this.loadPredefinedApps();
+    this.loadDemoApps();
   }
 
-  /** Load predefined apps from cache or backend */
-  loadPredefinedApps() {
-    const cached = localStorage.getItem(this.predefinedAppsKey);
-    if (cached) {
-      try {
-        this.predefinedApps = JSON.parse(cached);
-        return;
-      } catch (e) {
-        console.warn('Failed to parse cached predefined apps:', e);
-      }
+  /* ----------------------------------------------------
+   * DEMO APPS
+   * -------------------------------------------------- */
+
+  loadDemoApps() {
+    const cached = this.ussd.getCachedDemoApps();
+    if (cached.length) {
+      this.demoApps = cached;
+      return;
     }
 
-    this.fetchAndCacheDemoApps();
+    this.reloadDemoApps();
   }
 
-  /** Force reload demo apps from backend without auto-applying */
   reloadDemoApps() {
-    this.fetchAndCacheDemoApps(true, false);
-  }
+    this.loadingDemoApps = true;
 
-  /**
-   * Fetch demo apps from backend and cache them
-   * @param force force fetch from backend
-   * @param autoApply whether to auto-apply settings to the form
-   */
-  private fetchAndCacheDemoApps(force: boolean = false, autoApply: boolean = true) {
-    if (!force && this.predefinedApps.length > 0) return;
-
-    this.ussd.getDemoApps().subscribe({
-      next: (res) => {
-        this.predefinedApps = Array.isArray(res) ? res : [];
-        localStorage.setItem(this.predefinedAppsKey, JSON.stringify(this.predefinedApps));
-
-        if (autoApply && this.predefinedApps.length > 0) {
-          // Optionally auto-apply the first demo app on initial load
-          // Uncomment if you want first app auto-selected:
-          // this.onPredefinedSelect({ target: { value: this.predefinedApps[0].app_id } });
-        }
-
-        if (force) this.toast.show('Demo apps reloaded successfully!', 'success');
+    this.ussd.reloadDemoApps().subscribe({
+      next: (apps) => {
+        this.demoApps = apps;
+        this.toast.show('Demo apps reloaded', 'success');
       },
-      error: (error) => {
-        console.error('Failed to fetch predefined apps:', error);
-        if (force) this.toast.show('Failed to reload demo apps', 'danger');
-      }
+      error: () => {
+        this.toast.show('Failed to load demo apps', 'danger');
+      },
+      complete: () => (this.loadingDemoApps = false),
     });
   }
 
-  /** Add or update app */
+  /* ----------------------------------------------------
+   * ADD CUSTOM APP
+   * -------------------------------------------------- */
+
   addApp() {
     if (this.addAppForm.invalid) {
       this.toast.show('Fill all fields', 'danger');
       return;
     }
 
-    const { appName, appCode, appUrl } = this.addAppForm.value;
-    this.ussd.addApp({ name: appName, code: appCode, url: appUrl }).subscribe();
-    this.toast.show('App added successfully!', 'success');
-    this.addAppForm.reset();
+    const app: USSDApp = {
+      name: this.addAppForm.value.appName,
+      app_code: this.addAppForm.value.appCode,
+      url: this.addAppForm.value.appUrl,
+    };
+
+    this.ussd.addCustomApp(app).subscribe(() => {
+      this.toast.show('Custom app saved', 'success');
+      this.addAppForm.reset();
+      this.selectedAppDescription = null;
+    });
   }
 
-  /** Handle predefined app selection */
-  onPredefinedSelect(event: any) {
+  /* ----------------------------------------------------
+   * DEMO APP SELECTION
+   * -------------------------------------------------- */
+
+  onDemoSelect(event: any) {
     const appId = event.target.value;
     if (!appId) {
-      this.selectedAppDescription = null;
       this.addAppForm.reset();
+      this.selectedAppDescription = null;
       return;
     }
 
-    const selectedApp = this.predefinedApps.find(a => a.app_id === appId);
-    if (selectedApp) {
-      this.selectedAppDescription = selectedApp.description || null;
+    const app = this.demoApps.find(a => a.app_id === appId);
+    if (!app) return;
 
-      // Auto-populate form with selected demo app
-      this.addAppForm.patchValue({
-        appName: selectedApp.name,
-        appCode: selectedApp.app_code,
-        appUrl: selectedApp.app_url
-      });
+    this.selectedAppDescription = app.description || null;
 
-      // Auto-apply predefined app settings in the service
-      this.ussd.applyPredefinedApp(selectedApp);
-    }
+    // Copy demo app into the form (user must explicitly save)
+    this.addAppForm.patchValue({
+      appName: app.name,
+      appCode: app.app_code,
+      appUrl: app.app_url,
+    });
   }
 }

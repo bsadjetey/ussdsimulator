@@ -1,7 +1,18 @@
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpParams,
+} from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { BehaviorSubject, catchError, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+
+export interface USSDApp {
+  name: string;
+  app_code: string;
+  url: string;
+}
 
 export interface USSDRequest {
   text: string;
@@ -10,49 +21,125 @@ export interface USSDRequest {
   appCode: string;
 }
 
-export interface USSDApp {
-  name: string;
-  code: string;
-  url:  string;
-}
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class UssdService {
-  private localStorageKey = 'ussd_apps';
-  private settingsKey = 'ussd_settings';
-  private selectedAppSubject = new BehaviorSubject<any>(
-    localStorage.getItem('selected_app') || ''
-  );
+  /** Storage keys */
+  private CUSTOM_APPS_KEY = 'custom_apps';
+  private DEMO_APPS_KEY = 'demo_apps_cache';
+  private SELECTED_APP_KEY = 'selected_app';
+  private USE_CUSTOM_APPS_KEY = 'use_custom_apps';
+  private PHONE_KEY = 'phone_number';
+
+  /** Reactive selected app */
+  private selectedAppSubject = new BehaviorSubject<any>(null);
+
   selectedApp$ = this.selectedAppSubject.asObservable();
 
-  cfg: any;
-  private apiUrl: string;
-  private demoAppsUrl: string;
+  private apiUrl = environment.apiBaseUrl;
+  private demoAppsUrl = this.apiUrl + environment.ussd.demo_apps;
 
-  constructor(private http: HttpClient) {
-    this.cfg = environment;
-    this.apiUrl = this.cfg.apiBaseUrl;
-    this.demoAppsUrl = this.apiUrl + this.cfg.ussd.demo_apps;
-  }
+  constructor(private http: HttpClient) {}
 
+  /* ----------------------------------------------------
+   * DEMO APPS
+   * -------------------------------------------------- */
 
-  getDemoApps(){
+  /** Fetch demo apps from backend */
+  getDemoApps(): Observable<any[]> {
     return this.http
-      .get<any[]>(this.demoAppsUrl+"?user=1?text=&phone_number=0245170772&session_id=sess_mzj4unph67&app_code=WASTEAPP")
+      .get<any[]>(this.demoAppsUrl)
       .pipe(catchError(this.handleError));
   }
 
-  /** Generate unique session id per USSD session */
+  /** Reload demo apps and cache */
+  reloadDemoApps(): Observable<any[]> {
+    return this.getDemoApps().pipe(
+      tap((apps) => {
+        localStorage.setItem(this.DEMO_APPS_KEY, JSON.stringify(apps));
+      }),
+    );
+  }
+
+  /** Get cached demo apps */
+  getCachedDemoApps(): any[] {
+    return JSON.parse(localStorage.getItem(this.DEMO_APPS_KEY) || '[]');
+  }
+
+  /* ----------------------------------------------------
+   * CUSTOM APPS
+   * -------------------------------------------------- */
+
+  /** Add or update custom app */
+  addCustomApp(app: USSDApp): Observable<boolean> {
+    const apps = this.getCustomApps();
+    const index = apps.findIndex((a) => a.app_code === app.app_code);
+
+    index > -1 ? (apps[index] = app) : apps.push(app);
+
+    localStorage.setItem(this.CUSTOM_APPS_KEY, JSON.stringify(apps));
+    return of(true);
+  }
+
+  /** Get custom apps */
+  getCustomApps(): USSDApp[] {
+    return JSON.parse(localStorage.getItem(this.CUSTOM_APPS_KEY) || '[]');
+  }
+
+  /* ----------------------------------------------------
+   * APP SOURCE (DEMO vs CUSTOM)
+   * -------------------------------------------------- */
+
+  setUseCustomApps(value: boolean) {
+    localStorage.setItem(this.USE_CUSTOM_APPS_KEY, String(value));
+  }
+
+  useCustomApps(): boolean {
+    return localStorage.getItem(this.USE_CUSTOM_APPS_KEY) === 'true';
+  }
+
+  /* ----------------------------------------------------
+   * SELECTED APP
+   * -------------------------------------------------- */
+
+  setSelectedApp(app: any) {
+    if (!app) return;
+    localStorage.setItem('selected_app', JSON.stringify(app)); // store full object
+    this.selectedAppSubject.next(app); // emit for Navbar & Session
+  }
+
+  getSelectedApp(): any {
+    const cached = localStorage.getItem('selected_app');
+    return cached ? JSON.parse(cached) : null;
+  }
+
+  private loadSelectedApp(): USSDApp | null {
+    const raw = localStorage.getItem(this.SELECTED_APP_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }
+
+  /* ----------------------------------------------------
+   * PHONE NUMBER
+   * -------------------------------------------------- */
+
+  setPhoneNumber(number: string) {
+    localStorage.setItem(this.PHONE_KEY, number);
+  }
+
+  getPhoneNumber(): string | null {
+    return localStorage.getItem(this.PHONE_KEY);
+  }
+
+  /* ----------------------------------------------------
+   * USSD SESSION
+   * -------------------------------------------------- */
+
   generateSessionId(): string {
     return 'sess_' + Math.random().toString(36).substring(2, 15);
   }
 
-  /** Send USSD request to configured endpoint */
   sendUSSD(data: USSDRequest): Observable<string> {
-    const appUrl = this.getAppUrl();
-    if (!appUrl) return of('end Error: App URL not configured');
+    const app = this.getSelectedApp();
+    if (!app) return of('end Error: No app selected');
 
     const params = new HttpParams()
       .set('text', data.text)
@@ -60,73 +147,27 @@ export class UssdService {
       .set('session_id', data.sessionId)
       .set('app_code', data.appCode);
 
-    return this.http.get(appUrl, { responseType: 'text', params });
+    return this.http.get(app.app_url, { responseType: 'text', params });
   }
 
-  /** Add or update app in localStorage */
-  addApp(app: USSDApp): Observable<boolean> {
-    const apps: USSDApp[] = JSON.parse(localStorage.getItem(this.localStorageKey) || '[]');
-    const existingIndex = apps.findIndex(a => a.code === app.code);
+  /* ----------------------------------------------------
+   * RESET
+   * -------------------------------------------------- */
 
-    if (existingIndex > -1) {
-      apps[existingIndex] = app; // Update existing
-    } else {
-      apps.push(app); // Add new
-    }
-
-    localStorage.setItem(this.localStorageKey, JSON.stringify(apps));
-    return of(true);
+  reset() {
+    localStorage.removeItem(this.CUSTOM_APPS_KEY);
+    localStorage.removeItem(this.DEMO_APPS_KEY);
+    localStorage.removeItem(this.SELECTED_APP_KEY);
+    localStorage.removeItem(this.USE_CUSTOM_APPS_KEY);
+    localStorage.removeItem(this.PHONE_KEY);
+    this.selectedAppSubject.next(null);
   }
 
-  /** Get all saved apps */
-  getApps(): USSDApp[] {
-    return JSON.parse(localStorage.getItem(this.localStorageKey) || '[]');
-  }
+  /* ----------------------------------------------------
+   * ERROR HANDLER
+   * -------------------------------------------------- */
 
-  setAppUrl(url: string) { localStorage.setItem('app_url', url); }
-  getAppUrl(): string | null { return localStorage.getItem('app_url'); }
-
-  setPhoneNumber(number: string) { localStorage.setItem('phone_number', number); }
-  getPhoneNumber(): string | null { return localStorage.getItem('phone_number'); }
-
-  setSelectedApp(app: any) {
-    localStorage.setItem('selected_app', app.name);
-    this.selectedAppSubject.next(app);
-  }
-  getSelectedApp(): any { return this.selectedAppSubject.value; }
-
-  /** Save custom settings for an app */
-  saveSettings(settings: any) { localStorage.setItem(this.settingsKey, JSON.stringify(settings)); }
-  getSettings(): any {
-    const settings = localStorage.getItem(this.settingsKey);
-    return settings ? JSON.parse(settings) : null;
-  }
-
-  /** Clear all saved apps and user settings (keeps predefined apps externally) */
-  clearApps() { localStorage.removeItem(this.localStorageKey); }
-  clearSettings() {
-    localStorage.removeItem(this.settingsKey);
-    localStorage.removeItem('app_url');
-    localStorage.removeItem('phone_number');
-    localStorage.removeItem('selected_app');
-    this.selectedAppSubject.next('');
-  }
-
-  /** Auto-apply predefined app */
-  applyPredefinedApp(app: any) {
-    if (!app) return;
-    // this.setSelectedApp(app);
-    this.setAppUrl(app.endpoint);
-    this.addApp({ name: app.name, code: app.app_code, url: app.app_url }).subscribe();
-    if (app.settings) this.saveSettings(app.settings);
-  }
-
-    private handleError(errorRes: HttpErrorResponse) {
-    let errorMessage = 'An unknown error occurred!';
-    if (!errorRes.error) {
-      return throwError(errorMessage);
-    }
-    errorMessage = errorRes.error;
-    return throwError(errorMessage);
+  private handleError(error: HttpErrorResponse) {
+    return throwError(() => error.message || 'Unknown error');
   }
 }
