@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NavbarComponent } from './shared/navbar/navbar/navbar.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { NewVersionCheckerComponent } from './shared/new-version-checker/new-version-checker.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { ServiceWorkerModule } from '@angular/service-worker';
     UssdSessionComponent,
     SettingsComponent,
     AddAppComponent,
-    NavbarComponent
+    NavbarComponent,
+    NewVersionCheckerComponent
   ],
   imports: [
     BrowserModule,
@@ -27,7 +29,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
     AppRoutingModule,
     HttpClientModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
-      enabled:!isDevMode(),
+      enabled:isDevMode(),
       // Register the ServiceWorker as soon as the application is stable
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000'
