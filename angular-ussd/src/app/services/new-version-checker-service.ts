@@ -1,54 +1,46 @@
 import { Injectable, NgZone } from '@angular/core';
 import { SwUpdate } from '@angular/service-worker';
-import { Subscription } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class NewVersionCheckerService {
   isNewVersionAvailable = false;
-  newVersionSubscription?: Subscription;
 
   constructor(
     private swUpdate: SwUpdate,
-    private ngZone: NgZone
+    private ngZone: NgZone,
   ) {
-    console.log('swupdate constructor');
-    this.checkForUpdate();
-  }
+    console.log('[UpdateChecker] service constructed');
+    console.log('[UpdateChecker] SW enabled:', this.swUpdate.isEnabled);
 
-  checkForUpdate(): void {
-    if (!this.swUpdate.isEnabled) {
-      return;
+    if (this.swUpdate.isEnabled) {
+      this.attachListeners();
     }
 
-    this.newVersionSubscription?.unsubscribe();
+    setTimeout(() => {
+      console.log('[UpdateChecker] manual checkForUpdate()');
+      this.swUpdate.checkForUpdate();
+    }, 5000);
+  }
 
-    this.newVersionSubscription =
-      this.swUpdate.versionUpdates.subscribe(evt => {
-        switch (evt.type) {
+  private attachListeners(): void {
+    this.swUpdate.versionUpdates.subscribe((evt) => {
+      console.log('[UpdateChecker] EVENT:', evt);
+      console.log('[UpdateChecker] EVENT TYPE:', evt.type);
+      console.log('[UpdateChecker] TIME:', new Date().toISOString());
 
-          case 'VERSION_DETECTED':
-            console.log('Downloading new app version:', evt.version.hash);
-            break;
-
-          case 'VERSION_READY':
-            console.log('New app version ready:', evt.latestVersion.hash);
-
-            // 👇 THIS is the missing piece
-            this.ngZone.run(() => {
-              this.isNewVersionAvailable = true;
-            });
-
-            break;
-
-          case 'VERSION_INSTALLATION_FAILED':
-            console.error('SW install failed:', evt.error);
-            break;
-        }
-      });
+      if (evt.type === 'VERSION_READY') {
+        this.ngZone.run(() => {
+          console.log('[UpdateChecker] VERSION_READY detected');
+          this.isNewVersionAvailable = true;
+        });
+      }
+    });
   }
 
   applyUpdate(): void {
-    this.swUpdate.activateUpdate()
-      .then(() => document.location.reload());
+    console.log('[UpdateChecker] Applying update...');
+    this.swUpdate.activateUpdate().then(() => location.reload());
   }
+
+
 }
