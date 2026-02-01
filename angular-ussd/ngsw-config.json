@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/@angular/service-worker/config/schema.json",
   "index": "/index.html",
+
   "assetGroups": [
     {
       "name": "app",
@@ -27,6 +28,21 @@
       }
     }
   ],
-  "dataGroups": [],
+
+  "dataGroups": [
+    {
+      "name": "api-network-only",
+      "urls": [
+        "https://gateway.ussd365.com/api/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 1,
+        "maxAge": "1s",
+        "timeout": "1s"
+      }
+    }
+  ],
+
   "navigationRequestStrategy": "freshness"
 }
