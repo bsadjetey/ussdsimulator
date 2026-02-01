@@ -1,46 +1,110 @@
-import { Injectable, NgZone } from '@angular/core';
-import { SwUpdate } from '@angular/service-worker';
+import { Injectable, NgZone, OnDestroy } from '@angular/core';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { Subject, filter, takeUntil } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
-export class NewVersionCheckerService {
+export class NewVersionCheckerService implements OnDestroy {
+
   isNewVersionAvailable = false;
+
+  /** Auto-hide duration (minutes) */
+  private readonly AUTO_HIDE_MINUTES = 5;
+
+  /** Delay before first update check (ms) */
+  private readonly INITIAL_CHECK_DELAY = 5000;
+
+  private destroy$ = new Subject<void>();
+  private autoHideTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private swUpdate: SwUpdate,
-    private ngZone: NgZone,
+    private ngZone: NgZone
   ) {
-    console.log('[UpdateChecker] service constructed');
-    console.log('[UpdateChecker] SW enabled:', this.swUpdate.isEnabled);
-
-    if (this.swUpdate.isEnabled) {
-      this.attachListeners();
+    if (!this.swUpdate.isEnabled) {
+      return;
     }
 
-    setTimeout(() => {
-      console.log('[UpdateChecker] manual checkForUpdate()');
-      this.swUpdate.checkForUpdate();
-    }, 5000);
+    this.attachListeners();
+    this.scheduleInitialCheck();
   }
 
-  private attachListeners(): void {
-    this.swUpdate.versionUpdates.subscribe((evt) => {
-      console.log('[UpdateChecker] EVENT:', evt);
-      console.log('[UpdateChecker] EVENT TYPE:', evt.type);
-      console.log('[UpdateChecker] TIME:', new Date().toISOString());
+  // ----------------------------------
+  // Update detection
+  // ----------------------------------
 
-      if (evt.type === 'VERSION_READY') {
+  private attachListeners(): void {
+    this.swUpdate.versionUpdates
+      .pipe(
+        filter(
+          (evt): evt is VersionReadyEvent =>
+            evt.type === 'VERSION_READY'
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
         this.ngZone.run(() => {
-          console.log('[UpdateChecker] VERSION_READY detected');
-          this.isNewVersionAvailable = true;
+          this.showUpdateBanner();
         });
-      }
+      });
+  }
+
+  private scheduleInitialCheck(): void {
+    setTimeout(() => {
+      this.swUpdate.checkForUpdate().catch(() => {
+        /* silently ignore */
+      });
+    }, this.INITIAL_CHECK_DELAY);
+  }
+
+  // ----------------------------------
+  // Banner control
+  // ----------------------------------
+
+  private showUpdateBanner(): void {
+    this.isNewVersionAvailable = true;
+    this.startAutoHideTimer();
+  }
+
+  dismiss(): void {
+    this.clearAutoHideTimer();
+    this.isNewVersionAvailable = false;
+  }
+
+  private startAutoHideTimer(): void {
+    this.clearAutoHideTimer();
+
+    this.autoHideTimer = setTimeout(() => {
+      this.ngZone.run(() => {
+        this.isNewVersionAvailable = false;
+      });
+    }, this.AUTO_HIDE_MINUTES * 60 * 1000);
+  }
+
+  private clearAutoHideTimer(): void {
+    if (this.autoHideTimer) {
+      clearTimeout(this.autoHideTimer);
+      this.autoHideTimer = undefined;
+    }
+  }
+
+  // ----------------------------------
+  // Apply update
+  // ----------------------------------
+
+  applyUpdate(): void {
+    this.clearAutoHideTimer();
+    this.swUpdate.activateUpdate().then(() => {
+      location.reload();
     });
   }
 
-  applyUpdate(): void {
-    console.log('[UpdateChecker] Applying update...');
-    this.swUpdate.activateUpdate().then(() => location.reload());
+  // ----------------------------------
+  // Cleanup
+  // ----------------------------------
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.clearAutoHideTimer();
   }
-
-
 }

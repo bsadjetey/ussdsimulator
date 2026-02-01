@@ -10,14 +10,12 @@ export class NewVersionCheckerComponent {
   @Input() containerClasses = '';
 
   constructor(public newVersionCheckerService: NewVersionCheckerService) {
-    console.log('in version checker');
-    console.log('build v2');
   }
 
   applyUpdate(): void {
     this.newVersionCheckerService.applyUpdate();
   }
   dismiss() {
-    this.newVersionCheckerService.isNewVersionAvailable = false;
+    this.newVersionCheckerService.dismiss();
   }
 }
