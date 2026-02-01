@@ -29,7 +29,7 @@ import { NewVersionCheckerComponent } from './shared/new-version-checker/new-ver
     AppRoutingModule,
     HttpClientModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
-      enabled:isDevMode(),
+      enabled:!isDevMode(),
       // Register the ServiceWorker as soon as the application is stable
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000'

@@ -1,22 +1,22 @@
-import { Component, Input, ViewEncapsulation } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NewVersionCheckerService } from 'src/app/services/new-version-checker-service';
 
-
 @Component({
-    selector: 'app-new-version-checker',
-    templateUrl: './new-version-checker.component.html',
-    styleUrls: ['./new-version-checker.component.scss'],
-    encapsulation: ViewEncapsulation.None
+  selector: 'app-new-version-checker',
+  templateUrl: './new-version-checker.component.html',
+  styleUrls: ['./new-version-checker.component.scss']
 })
 export class NewVersionCheckerComponent {
-    @Input()
-  containerClasses!: string;
 
-    constructor(
-        public newVersionCheckerService: NewVersionCheckerService
-    ) { }
+  @Input() containerClasses = '';
 
-    applyUpdate(): void {
-        this.newVersionCheckerService.applyUpdate();
-    }
+  constructor(
+    public newVersionCheckerService: NewVersionCheckerService
+  ) {
+    console.log("in version checker");
+  }
+
+  applyUpdate(): void {
+    this.newVersionCheckerService.applyUpdate();
+  }
 }
