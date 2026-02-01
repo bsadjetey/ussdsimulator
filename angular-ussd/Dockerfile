@@ -27,7 +27,7 @@ FROM nginx:alpine
 COPY --from=build /app/dist/ngUssdSimulator /usr/share/nginx/html
 
 # Copy optional Nginx config if needed
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80
