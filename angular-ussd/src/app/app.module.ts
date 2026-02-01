@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NavbarComponent } from './shared/navbar/navbar/navbar.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { NewVersionCheckerComponent } from './shared/new-version-checker/new-version-checker.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { ServiceWorkerModule } from '@angular/service-worker';
     UssdSessionComponent,
     SettingsComponent,
     AddAppComponent,
-    NavbarComponent
+    NavbarComponent,
+    NewVersionCheckerComponent
   ],
   imports: [
     BrowserModule,

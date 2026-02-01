@@ -1,0 +1,23 @@
+<div *ngIf="newVersionCheckerService.isNewVersionAvailable" class="update-toast">
+
+    <div class="update-toast__content">
+        <div class="update-toast__text">
+            <div class="update-toast__title">
+                Update Available
+            </div>
+            <div class="update-toast__info">
+                A faster and improved version of USSD365's Simulator is ready.
+            </div>
+        </div>
+
+        <div class="update-toast__actions">
+            <button class="btn btn-secondary" (click)="dismiss()">
+                Later
+            </button>
+
+            <button class="btn btn-primary" (click)="applyUpdate()">
+                Update
+            </button>
+        </div>
+    </div>
+</div>
